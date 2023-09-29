@@ -1,0 +1,96 @@
+###Figures
+##barplot faceted
+metadata_Jenna <- read.csv ("/Users/microadmin/Library/CloudStorage/OneDrive-UniversityofOtago/Htin/Jenna_thesis_figure/Sample_yangon_outside_sen_res_Final_Jenna.csv", header = TRUE)
+drug_profile_count <- rename(count(metadata_Jenna, main_lineage, DR_type), Freq = n)
+
+
+ggplot(drug_profile_count, aes(x=DR_type, y=Freq, fill = DR_type)) +
+  facet_grid(cols = vars(main_lineage), space = "free", scales = "free") +
+  geom_bar(stat="identity") +
+  scale_fill_manual(breaks = c("HR-TB", "MDR-TB", "Other", "Pre-XDR", "RR-TB", "Sensitive"), values = c("cyan", "orange", "green", "red", "purple", "pink"))
+
+##bubbleplot by location and year
+location_year_count <- rename(count(metadata_Jenna, location, year.of.isolation), Freq = n)
+
+ggplot(location_year_count, aes(x=year.of.isolation, y=location, size = Freq)) +
+  geom_point()
+
+##bubbleplot lineage year
+lineage_year_count <- rename(count(metadata_Jenna, main_lineage, year.of.isolation), Freq = n)
+
+ggplot(lineage_year_count, aes(x=year.of.isolation, y = main_lineage, size = Freq)) +
+  geom_point()
+
+##ratio of lineage by location
+location_lineage_count <- rename(count(metadata_Jenna, main_lineage, location), Freq = n)
+
+location_lineage_plot <- ggplot(location_lineage_count, aes(fill = main_lineage, y = Freq, x = location)) +
+  geom_bar(position="fill", stat="identity") +
+  ylab("Ratio") +
+  xlab("Location") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1), text = element_text(size=20)) +
+  theme(strip.text.y = element_text(angle = 0))
+
+location_lineage_plot
+pdf("location_lineage.pdf", width = 5.5, height = 9.9)
+location_lineage_plot
+dev.off()
+
+##resistant sensitive lienage
+res_sen_lineage <- read.csv("/Users/microadmin/Library/CloudStorage/OneDrive-UniversityofOtago/Htin/Jenna_thesis_figure/resistant_sensitive_lineage.csv", header = TRUE)
+location_count <- read.csv("/Users/microadmin/Library/CloudStorage/OneDrive-UniversityofOtago/Htin/Jenna_thesis_figure/Sample_Final_Jenna.csv", header = TRUE)
+location_count1 <- rename(count(location_count, location), Freq = n)
+
+
+res_sen_lineage_count <- rename(count(res_sen_lineage, DR_type, main_lineage), Freq = n)
+ggplot(res_sen_lineage_count, aes(x = DR_type, y = Freq, fill = main_lineage)) +
+  geom_bar(stat = "identity") +
+  facet_grid(cols = vars(main_lineage), space = "free", scales = "free")
+
+ggplot(res_sen_lineage_count, aes(x = main_lineage, y = Freq, fill = DR_type)) +
+  geom_bar(position="fill", stat="identity") +
+  ylab("Ratio") +
+  xlab("Lineage")
+
+res_sen_lin_location <- read.csv("/Users/microadmin/Library/CloudStorage/OneDrive-UniversityofOtago/Htin/Jenna_thesis_figure/res_sen_lin_location.csv", header = TRUE)
+res_sen_lineage_location_count <- rename(count(res_sen_lin_location, DR_type, location, main_lineage), Freq = n)
+res_sen_lineage_location_plot <- ggplot(res_sen_lineage_location_count, aes(x = main_lineage, y = Freq, fill = DR_type)) +
+  geom_bar(position="fill", stat="identity") +
+  facet_grid(cols = vars(main_lineage), rows = vars(location), space = "free", scales = "free", switch = "y") +
+  ylab("Ratio") +
+  xlab("Lineage") +
+  labs(fill = "DR type") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1), text = element_text(size=20)) +
+  theme(strip.text.y = element_text(angle = 0)) 
+
+res_sen_lineage_location_plot
+pdf("res_sen_lienage_location.pdf", width = 7, height = 10)
+res_sen_lineage_location_plot
+dev.off()
+
+fisher.test(table(res_sen_lienage_location_count$a, dat$variable2))
+
+res_sen_lineage_location_count 
+
+write.csv(res_sen_lineage_location_count, "~/Downloads/res_sen.csv")
+dat = yangon
+
+dat <- data.frame(
+  "yangon" = c(149, 102),
+  "outside_yangon" = c(130, 265),
+  row.names = c("Res", "Sens"),
+  stringsAsFactors = FALSE
+)
+
+test <- fisher.test(dat)
+test
+
+## For Jenna's metadata table
+
+table_metadata_main_lineage <- rename(count(metadata_Jenna, main_lineage, DR_type), Freq = n)
+table_metadata_drug_DR <- rename(count(metadata_Jenna, DR_type, location), Freq = n)
+
+table_metadata <- bind_rows(table_metadata_main_lineage) %>%
+  bind_rows(table_metadata_drug_DR)
+
+write.csv(table_metadata, "~/Desktop/table1.csv")
