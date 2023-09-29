@@ -1,0 +1,96 @@
+#Snippy Multi:
+
+
+#make tab seperated input txt file as follows:
+
+
+# input.tab = ID R1 [R2]
+
+Isolate1        /path/to/R1.fq.gz        /path/to/R2.fq.gz
+
+Isolate1b        /path/to/R1.fastq.gz        /path/to/R2.fastq.gz
+
+Isolate1c        /path/to/R1.fa                /path/to/R2.fa
+
+
+
+
+% snippy-multi input.tab --ref Reference.gbk --cpus 16 > runme.sh
+
+
+% less runme.sh   # check the script makes sense
+
+
+% sh ./runme.sh   # leave it running over lunch
+
+
+
+
+
+
+#building the tree: 
+
+
+## installation of gubbins 
+
+# You will need to create your own virtual env. 
+
+conda create -n bb2a_conda  (Molecular_Dating on Koch)
+
+conda activate bb2a_conda 
+
+conda config --add channels r 
+
+conda config --add channels defaults 
+
+conda config --add channels conda-forge 
+
+conda config --add channels bioconda 
+
+conda install gubbins 
+
+## after this (longish) step, gubbins should be installed, try to run run_gubbins.py –h, you should have the normal help. 
+
+
+
+# all the samples passing QC should be copied to a new directory, we will call it dir. Note that we will create one directory per location (e.i. Border, Yangon, Myanmar) for a start. 
+
+
+
+## change directory to dir 
+
+cd dir 
+
+
+
+## Collecting snippy results and creating core.full.aln 
+
+snippy-core --ref /scratch/aung_lab/data/Yangon/02_YangonSnippy/mycobacterium_ref_genome.fa *_Snippy.txt/ 
+
+# at this stage you should verify if it created core.full.aln file. 
+
+
+
+## Cleaning the aln: 
+
+snippy-clean_full_aln core.full.aln > clean.full.aln 
+
+
+
+## Running gubbins: Gubbins will select the polymorphic sites from the aln. 
+
+## note: this is long so make sure you use nohup for unreliable internet connection :) 
+
+nohup run_gubbins.py -p gubbins clean.full.aln 2> nohup_gubbins.out 
+
+
+
+## building the aln from the fasta: 
+
+snp-sites -c gubbins.filtered_polymorphic_sites.fasta > gubbins.filtered_polymorphic_sites.aln 
+
+
+
+## last building the tree: 
+
+FastTree -gtr -nt gubbins.filtered_polymorphic_sites.aln > gubbins.filtered_polymorphic_sites.tree
